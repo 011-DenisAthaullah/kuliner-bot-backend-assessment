@@ -2,16 +2,19 @@
 
 namespace Tests\Feature;
 
+use App\Services\TelegramService;
+use App\Services\RestaurantService;
 use Tests\TestCase;
-use Illuminate\Support\Facades\Http;
 
 class TelegramTest extends TestCase
 {
     public function test_webhook_text()
     {
-        Http::fake([
-            '*' => Http::response(['ok' => true], 200),
-        ]);
+        $this->mock(TelegramService::class, function ($mock) {
+            $mock->shouldReceive('sendMessage')
+                ->once()
+                ->andReturn(true);
+        });
 
         $res = $this->postJson('/api/telegram/webhook', [
             'message' => [
@@ -25,6 +28,24 @@ class TelegramTest extends TestCase
 
     public function test_webhook_location()
     {
+        $this->mock(TelegramService::class, function ($mock) {
+            $mock->shouldReceive('sendMessage')
+                ->once()
+                ->andReturn(true);
+        });
+
+        $this->mock(RestaurantService::class, function ($mock) {
+            $mock->shouldReceive('search')
+                ->once()
+                ->andReturn([
+                    [
+                        'name' => 'Restoran A',
+                        'address' => 'Jakarta',
+                        'rating' => 4.5
+                    ]
+                ]);
+        });
+
         $res = $this->postJson('/api/telegram/webhook', [
             "message" => [
                 "chat" => ["id" => 123],

@@ -19,7 +19,9 @@ class TelegramController extends Controller
         $update = $request->all();
 
         $message = $update['message'] ?? null;
-        if (!$message) return response()->json(['ok' => true]);
+        if (!$message) {
+            return response()->json(['ok' => true]);
+        }
 
         $chatId = $message['chat']['id'];
 
@@ -27,20 +29,17 @@ class TelegramController extends Controller
         // 1. LOCATION MESSAGE
         // ======================
         if (isset($message['location'])) {
-            $lat = $message['location']['latitude'];
-            $lng = $message['location']['longitude'];
-
-            // SIMULASI: ubah koordinat jadi keyword sederhana
-            // (karena API kamu belum support geo search)
-            $query = "jakarta"; // nanti bisa upgrade pakai reverse geocoding
+            $query = "jakarta";
 
             $data = $this->restaurant->search($query);
 
             if (isset($data['error'])) {
-                return $this->telegram->sendMessage(
+                $this->telegram->sendMessage(
                     $chatId,
                     "📍 Lokasi diterima, tapi data restoran tidak ditemukan"
                 );
+
+                return response()->json(['ok' => true]);
             }
 
             $result = "📍 Restoran di sekitar kamu:\n\n";
@@ -51,17 +50,21 @@ class TelegramController extends Controller
                 $result .= "⭐ {$r['rating']}\n\n";
             }
 
-            return $this->telegram->sendMessage($chatId, $result);
+            $this->telegram->sendMessage($chatId, $result);
+
+            return response()->json(['ok' => true]);
         }
 
         // ======================
         // 2. CONTACT MESSAGE
         // ======================
         if (isset($message['contact'])) {
-            return $this->telegram->sendMessage(
+            $this->telegram->sendMessage(
                 $chatId,
                 "📞 Kontak diterima: " . $message['contact']['phone_number']
             );
+
+            return response()->json(['ok' => true]);
         }
 
         // ======================
@@ -73,19 +76,23 @@ class TelegramController extends Controller
             $query = trim(str_replace('/search', '', $text));
 
             if (!$query) {
-                return $this->telegram->sendMessage(
+                $this->telegram->sendMessage(
                     $chatId,
                     "Gunakan: /search jakarta"
                 );
+
+                return response()->json(['ok' => true]);
             }
 
             $data = $this->restaurant->search($query);
 
             if (isset($data['error'])) {
-                return $this->telegram->sendMessage(
+                $this->telegram->sendMessage(
                     $chatId,
                     "Data tidak ditemukan"
                 );
+
+                return response()->json(['ok' => true]);
             }
 
             $result = "🍜 Hasil Restoran:\n\n";
@@ -96,15 +103,19 @@ class TelegramController extends Controller
                 $result .= "⭐ {$r['rating']}\n\n";
             }
 
-            return $this->telegram->sendMessage($chatId, $result);
+            $this->telegram->sendMessage($chatId, $result);
+
+            return response()->json(['ok' => true]);
         }
 
         // ======================
         // DEFAULT RESPONSE
         // ======================
-        return $this->telegram->sendMessage(
+        $this->telegram->sendMessage(
             $chatId,
             "Kirim /search, lokasi, atau kontak"
         );
+
+        return response()->json(['ok' => true]);
     }
 }
