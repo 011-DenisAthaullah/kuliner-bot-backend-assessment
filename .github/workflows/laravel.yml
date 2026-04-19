@@ -40,9 +40,11 @@ jobs:
       - name: Copy env
         run: cp .env.example .env
 
+      # 🔥 FIX PENTING: override semua config CI
       - name: Set environment variables
         run: |
           echo "APP_ENV=testing" >> .env
+          echo "APP_KEY=" >> .env
           echo "DB_CONNECTION=pgsql" >> .env
           echo "DB_HOST=127.0.0.1" >> .env
           echo "DB_PORT=5432" >> .env
@@ -50,14 +52,18 @@ jobs:
           echo "DB_USERNAME=postgres" >> .env
           echo "DB_PASSWORD=postgres" >> .env
 
+          # 🔥 IMPORTANT: disable real API calls
+          echo "TELEGRAM_BASE_URL=https://api.telegram.org" >> .env
+          echo "TELEGRAM_BOT_TOKEN=fake_token" >> .env
+
       - name: Generate key
         run: php artisan key:generate
 
-      - name: Clear config
+      - name: Clear config cache
         run: php artisan config:clear
 
       - name: Run migration
         run: php artisan migrate --force
 
       - name: Run tests
-        run: php artisan test
+        run: php artisan test --testdox
