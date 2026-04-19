@@ -13,6 +13,7 @@ use App\Repositories\Interfaces\ReviewRepositoryInterface;
 use App\Repositories\RestaurantRepository;
 use App\Repositories\MenuRepository;
 use App\Repositories\ReviewRepository;
+use App\Services\TelegramService;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -21,6 +22,9 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind(RestaurantRepositoryInterface::class, RestaurantRepository::class);
         $this->app->bind(MenuRepositoryInterface::class, MenuRepository::class);
         $this->app->bind(ReviewRepositoryInterface::class, ReviewRepository::class);
+        $this->app->singleton(TelegramService::class, function () {
+            return new TelegramService();
+        });
     }
 
     public function boot(): void

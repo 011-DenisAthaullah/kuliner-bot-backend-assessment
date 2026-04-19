@@ -45,14 +45,12 @@ class TelegramTest extends TestCase
 
     public function test_webhook_text()
     {
-        $res = $this->postJson('/api/telegram/webhook', [
+        $this->postJson('/api/telegram/webhook', [
             'message' => [
                 'chat' => ['id' => 123],
                 'text' => 'halo'
             ]
-        ]);
-
-        $res->assertStatus(200);
+        ])->assertStatus(200);
     }
 
     public function test_webhook_location()
