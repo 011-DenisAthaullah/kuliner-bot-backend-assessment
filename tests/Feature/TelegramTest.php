@@ -12,26 +12,34 @@ class TelegramTest extends TestCase
     {
         parent::setUp();
 
+        // reset binding biar gak ke-cache instance lama
+        $this->app->forgetInstance(TelegramService::class);
+        $this->app->forgetInstance(RestaurantService::class);
+
         // MOCK TELEGRAM SERVICE
-        $this->app->instance(TelegramService::class, new class {
-            public function sendMessage($chatId, $text)
-            {
-                return true;
-            }
+        $this->app->bind(TelegramService::class, function () {
+            return new class {
+                public function sendMessage($chatId, $text)
+                {
+                    return true;
+                }
+            };
         });
 
         // MOCK RESTAURANT SERVICE
-        $this->app->instance(RestaurantService::class, new class {
-            public function search($query)
-            {
-                return [
-                    [
-                        'name' => 'Restoran A',
-                        'address' => 'Jakarta',
-                        'rating' => 4.5
-                    ]
-                ];
-            }
+        $this->app->bind(RestaurantService::class, function () {
+            return new class {
+                public function search($query)
+                {
+                    return [
+                        [
+                            'name' => 'Restoran A',
+                            'address' => 'Jakarta',
+                            'rating' => 4.5
+                        ]
+                    ];
+                }
+            };
         });
     }
 
@@ -50,11 +58,11 @@ class TelegramTest extends TestCase
     public function test_webhook_location()
     {
         $res = $this->postJson('/api/telegram/webhook', [
-            "message" => [
-                "chat" => ["id" => 123],
-                "location" => [
-                    "latitude" => -6.2,
-                    "longitude" => 106.8
+            'message' => [
+                'chat' => ['id' => 123],
+                'location' => [
+                    'latitude' => -6.2,
+                    'longitude' => 106.8
                 ]
             ]
         ]);
