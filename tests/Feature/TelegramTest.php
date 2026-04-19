@@ -10,10 +10,13 @@ class TelegramTest extends TestCase
 {
     public function test_webhook_text()
     {
-        $this->mock(TelegramService::class, function ($mock) {
-            $mock->shouldReceive('sendMessage')
-                ->once()
-                ->andReturn(true);
+        $this->app->bind(TelegramService::class, function () {
+            return new class {
+                public function sendMessage($chatId, $text)
+                {
+                    return true;
+                }
+            };
         });
 
         $res = $this->postJson('/api/telegram/webhook', [
@@ -28,22 +31,28 @@ class TelegramTest extends TestCase
 
     public function test_webhook_location()
     {
-        $this->mock(TelegramService::class, function ($mock) {
-            $mock->shouldReceive('sendMessage')
-                ->once()
-                ->andReturn(true);
+        $this->app->bind(TelegramService::class, function () {
+            return new class {
+                public function sendMessage($chatId, $text)
+                {
+                    return true;
+                }
+            };
         });
 
-        $this->mock(RestaurantService::class, function ($mock) {
-            $mock->shouldReceive('search')
-                ->once()
-                ->andReturn([
-                    [
-                        'name' => 'Restoran A',
-                        'address' => 'Jakarta',
-                        'rating' => 4.5
-                    ]
-                ]);
+        $this->app->bind(RestaurantService::class, function () {
+            return new class {
+                public function search($query)
+                {
+                    return [
+                        [
+                            'name' => 'Restoran A',
+                            'address' => 'Jakarta',
+                            'rating' => 4.5
+                        ]
+                    ];
+                }
+            };
         });
 
         $res = $this->postJson('/api/telegram/webhook', [
